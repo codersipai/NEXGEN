@@ -70,6 +70,14 @@
     color: #667085;
     font-size: .9rem;
   }
+
+/* Study break timer + spin wheel */
+.study-timer-box{position:fixed;right:24px;bottom:24px;z-index:9998;background:rgba(10,20,50,.96);color:#fff;padding:18px 20px;border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.35);text-align:center;min-width:190px;font-family:Arial,sans-serif}
+.study-timer-title{font-size:15px;font-weight:700;margin-bottom:6px}.study-timer-display{font-size:34px;font-weight:800;letter-spacing:2px;margin:4px 0 12px}.study-timer-box button{border:0;border-radius:10px;padding:9px 15px;margin:0 3px;font-weight:700;cursor:pointer}.study-start{background:#1468ff;color:#fff}.study-reset{background:#fff;color:#172033}
+.study-overlay{display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.68);align-items:center;justify-content:center;padding:20px;font-family:Arial,sans-serif}.study-modal{width:min(460px,95vw);background:#fff;border-radius:24px;padding:30px;text-align:center;box-shadow:0 25px 80px rgba(0,0,0,.4)}.study-modal h2{margin:8px 0 10px}.study-modal p{color:#667085;line-height:1.5}.study-modal button{border:0;border-radius:12px;padding:12px 22px;font-weight:700;cursor:pointer;margin:5px}.study-yes{background:#1468ff;color:#fff}.study-no{background:#e9eef7;color:#172033}
+.study-wheel-modal{width:min(500px,96vw);max-height:95vh;overflow:auto}.study-wheel-wrap{position:relative;width:300px;margin:18px auto}.study-wheel-wrap canvas{display:block;width:300px;height:300px;transition:transform 4s cubic-bezier(.12,.75,.15,1);margin:auto}.study-pointer{position:absolute;z-index:2;top:-8px;left:50%;transform:translateX(-50%);font-size:30px;color:#111}.study-spin{background:#ed3b91;color:#fff}.study-spin:disabled{opacity:.5;cursor:not-allowed}.study-result{min-height:25px;font-weight:700;margin:10px}.study-break-time{font-size:40px;font-weight:800;margin:10px}.study-close{background:#172033;color:#fff}
+@media(max-width:600px){.study-timer-box{right:10px;bottom:10px}.study-wheel-wrap,.study-wheel-wrap canvas{width:250px;height:250px}}
+
 </style>
 </head>
 <body>
@@ -97,5 +105,51 @@
 <footer>
   Wave Motion — Physics Notes
 </footer>
+
+<!-- Study break timer -->
+<div class="study-timer-box">
+  <div class="study-timer-title">⏱ Focus Timer</div>
+  <div class="study-timer-display" id="studyTimerDisplay">01:00</div>
+  <button class="study-start" onclick="studyStartTimer()">Start</button>
+  <button class="study-reset" onclick="studyResetTimer()">Reset</button>
+</div>
+<div class="study-overlay" id="studyBreakQuestion">
+  <div class="study-modal">
+    <div style="font-size:48px">🧘</div><h2>Would you like a break?</h2>
+    <p>You've finished your focus session. Would you like to take a short break?</p>
+    <button class="study-yes" onclick="studyChooseBreak(true)">Yes</button>
+    <button class="study-no" onclick="studyChooseBreak(false)">No</button>
+  </div>
+</div>
+<div class="study-overlay" id="studyWheelPopup">
+  <div class="study-modal study-wheel-modal">
+    <h2>🎡 Pick Your Break</h2><p>Spin the wheel and relax for 10 minutes.</p>
+    <div class="study-wheel-wrap"><div class="study-pointer">▼</div><canvas id="studyWheel" width="300" height="300"></canvas></div>
+    <button class="study-spin" id="studySpinBtn" onclick="studySpinWheel()">Spin the Wheel</button>
+    <div class="study-result" id="studySelectedBreak"></div>
+    <div class="study-break-time" id="studyBreakTimer">10:00</div>
+    <button class="study-close" onclick="studyCloseWheel()">Continue to website</button>
+  </div>
+</div>
+<script>
+(function(){
+const opts=['😴 Take a nap','🚶 Go for a walk','🎮 Play games','☕ Take a coffee'];
+let t=60,ti=null,rot=0,bt=600,bi=null,spun=false;
+const $=id=>document.getElementById(id);
+function show(){ $('studyTimerDisplay').textContent=String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'); }
+window.studyStartTimer=function(){if(ti)return;ti=setInterval(()=>{t--;show();if(t<=0){clearInterval(ti);ti=null;$('studyBreakQuestion').style.display='flex';}},1000)};
+window.studyResetTimer=function(){clearInterval(ti);ti=null;t=60;show()};
+window.studyChooseBreak=function(yes){$('studyBreakQuestion').style.display='none';if(yes)studyOpenWheel();else studyResetTimer()};
+function draw(){const c=$('studyWheel'),x=c.getContext('2d'),m=c.width/2,r=m-4,s=2*Math.PI/opts.length;x.clearRect(0,0,c.width,c.height);opts.forEach((o,i)=>{let a=i*s-Math.PI/2;x.beginPath();x.moveTo(m,m);x.arc(m,m,r,a,a+s);x.closePath();x.fillStyle=['#1468ff','#ed3b91','#20a56a','#f39c12'][i];x.fill();x.strokeStyle='#fff';x.lineWidth=3;x.stroke();x.save();x.translate(m,m);x.rotate(a+s/2);x.textAlign='right';x.fillStyle='#fff';x.font='bold 14px Arial';x.fillText(o,r-12,5);x.restore()})}
+window.studyOpenWheel=function(){clearInterval(bi);$('studyWheelPopup').style.display='flex';$('studySelectedBreak').textContent='';$('studyBreakTimer').textContent='10:00';$('studySpinBtn').disabled=false;spun=false;draw()};
+window.studySpinWheel=function(){if(spun)return;spun=true;$('studySpinBtn').disabled=true;rot+=1440+Math.floor(Math.random()*360);$('studyWheel').style.transform=`rotate(${rot}deg)`;setTimeout(()=>{let n=rot%360,s=360/opts.length,i=Math.floor(((360-n+s/2)%360)/s);$('studySelectedBreak').textContent='Your break: '+opts[i];studyBreakStart()},4100)};
+function studyBreakStart(){clearInterval(bi);bt=600;studyBreakUpdate();bi=setInterval(()=>{bt--;studyBreakUpdate();if(bt<=0){clearInterval(bi);bi=null;$('studySelectedBreak').textContent='⏰ Break finished! Time to get back to work.';studyAlarm()}},1000)}
+function studyBreakUpdate(){$('studyBreakTimer').textContent=String(Math.floor(bt/60)).padStart(2,'0')+':'+String(bt%60).padStart(2,'0')}
+function studyAlarm(){try{let A=window.AudioContext||window.webkitAudioContext,a=new A,c=0,i=setInterval(()=>{let o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.15;o.start();o.stop(a.currentTime+.25);if(++c>=5)clearInterval(i)},400)}catch(e){alert('⏰ Your 10-minute break is over!')}}
+window.studyCloseWheel=function(){clearInterval(bi);bi=null;$('studyWheelPopup').style.display='none';studyResetTimer()};
+show();draw();
+})();
+</script>
+
 </body>
 </html>
