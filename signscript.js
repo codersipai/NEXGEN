@@ -42,20 +42,12 @@ const signupForm = document.getElementById("signupForm");
                 return;
             }
 
-             if (email === "sarik@gmail.com" && password === "1234") {
-        message.style.color = "green";
-        message.textContent = "Login Successful!";
-    } else {
-        message.style.color = "red";
-        message.textContent = "Invalid email or Password";
-    }
-
             message.textContent =
                 "Account created successfully!";
             message.style.color = "green";
 
          
             setTimeout(function () {
-                window.location.href = "sig.html";
+                window.location.href = "login.html";
             }, 1500);
         });

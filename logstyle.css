@@ -10,7 +10,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            background: linear-gradient(180deg, #b2f1ff, #5555b7,#03102f);
         }
 
         .login-container {
@@ -50,7 +50,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background: #4facfe;
+            background: #667eea;
             color: white;
             border: none;
             border-radius: 5px;

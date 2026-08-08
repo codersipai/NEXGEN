@@ -6,6 +6,9 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
     if (email === "sarik@gmail.com" && password === "1234") {
         message.style.color = "green";
         message.textContent = "Login Successful!";
+        setTimeout(function () {
+                window.location.href = "sss.html";
+            }, 1500);
     } else {
         message.style.color = "red";
         message.textContent = "Invalid email or Password";
